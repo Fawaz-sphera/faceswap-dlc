@@ -19,10 +19,22 @@ if [[ -z "${SWAP_SERVICE_API_KEY:-}" ]]; then
 fi
 command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L || echo "[bootstrap] nvidia-smi not found (GPU driver?)"
 python3 -c "import torch; print('[bootstrap] torch.cuda.is_available=', torch.cuda.is_available(), 'count=', torch.cuda.device_count())" 2>/dev/null || true
-for d in /usr/local/cuda/lib64 /usr/local/cuda-12/lib64 /usr/local/cuda-11.8/lib64; do
+for d in /usr/local/cuda/lib64 /usr/local/cuda-12/lib64 /usr/local/cuda-11.8/lib64 /usr/lib/x86_64-linux-gnu; do
   [[ -d "$d" ]] && export LD_LIBRARY_PATH="$d:${LD_LIBRARY_PATH:-}"
 done
 python3 -m pip install -q -U pip
+# CuDNN libs for ONNX Runtime CUDA EP (PyTorch may see GPU while ORT falls back to CPU without these).
+python3 -m pip install -q "nvidia-cudnn-cu11==8.9.7.29" 2>/dev/null || true
+CUDNN_LIB="$(python3 -c "
+try:
+ import os as _os
+ import nvidia.cudnn as _c
+ _p = _os.path.join(_os.path.dirname(_c.__file__), 'lib')
+ print(_p if _os.path.isdir(_p) else '')
+except Exception:
+ print('')
+" 2>/dev/null || true)"
+[[ -n "${CUDNN_LIB:-}" ]] && export LD_LIBRARY_PATH="${CUDNN_LIB}:${LD_LIBRARY_PATH:-}"
 python3 -m pip uninstall -y onnxruntime 2>/dev/null || true
 python3 -m pip install -q -r "$ROOT/requirements.txt"
 python3 -c "import onnxruntime as _o; print('[bootstrap] ORT providers', _o.get_available_providers())"
