@@ -38,6 +38,9 @@ fi
 python3 -m pip install -q -U pip
 # CuDNN libs for ONNX Runtime CUDA EP (ORT needs libcudnn.so.8 next to CUDA).
 python3 -m pip install -q "nvidia-cudnn-cu11==8.9.7.29" 2>/dev/null || true
+# ORT 1.17 CUDA EP probes libcublasLt.so.12 at session-init even when linked to .so.11.
+# Missing .so.12 triggers SIGABRT on CUDA 11.8 images. Ship the CUDA-12 cuBLAS stubs via pip.
+python3 -m pip install -q "nvidia-cublas-cu12" 2>/dev/null || true
 CUDNN_LIB="$(python3 -c "
 try:
  import os as _os
@@ -49,7 +52,10 @@ except Exception:
 " 2>/dev/null || true)"
 [[ -n "${CUDNN_LIB:-}" ]] && export LD_LIBRARY_PATH="${CUDNN_LIB}:${LD_LIBRARY_PATH:-}"
 _py_site="$(python3 -c 'import site; print(site.getsitepackages()[0])' 2>/dev/null || true)"
-for d in "${_py_site}/nvidia/cudnn/lib" "${_py_site}/nvidia/cudnn/lib/x86_64-linux-gnu"; do
+for d in \
+  "${_py_site}/nvidia/cudnn/lib" \
+  "${_py_site}/nvidia/cudnn/lib/x86_64-linux-gnu" \
+  "${_py_site}/nvidia/cublas/lib"; do
   [[ -d "$d" ]] && export LD_LIBRARY_PATH="$d:${LD_LIBRARY_PATH:-}"
 done
 python3 -m pip uninstall -y onnxruntime 2>/dev/null || true
