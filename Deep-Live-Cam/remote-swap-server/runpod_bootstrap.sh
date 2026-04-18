@@ -18,7 +18,10 @@ if [[ -z "${SWAP_SERVICE_API_KEY:-}" ]]; then
   exit 1
 fi
 command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L || echo "[bootstrap] nvidia-smi not found (GPU driver?)"
-export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}"
+python3 -c "import torch; print('[bootstrap] torch.cuda.is_available=', torch.cuda.is_available(), 'count=', torch.cuda.device_count())" 2>/dev/null || true
+for d in /usr/local/cuda/lib64 /usr/local/cuda-12/lib64 /usr/local/cuda-11.8/lib64; do
+  [[ -d "$d" ]] && export LD_LIBRARY_PATH="$d:${LD_LIBRARY_PATH:-}"
+done
 python3 -m pip install -q -U pip
 python3 -m pip uninstall -y onnxruntime 2>/dev/null || true
 python3 -m pip install -q -r "$ROOT/requirements.txt"

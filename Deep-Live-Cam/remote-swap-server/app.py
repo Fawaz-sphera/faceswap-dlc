@@ -83,7 +83,15 @@ def startup() -> None:
 def health() -> dict:
     ok = _session is not None and _emap is not None
     prov = _session.get_providers() if _session else []
-    return {"ok": ok, "providers": prov, "input_hw": list(_input_size_hw)}
+    out: dict = {"ok": ok, "providers": prov, "input_hw": list(_input_size_hw)}
+    try:
+        import torch
+
+        out["torch_cuda"] = torch.cuda.is_available()
+        out["torch_device_count"] = torch.cuda.device_count()
+    except Exception:
+        pass
+    return out
 
 
 @app.post("/v1/swap")

@@ -6,8 +6,8 @@ variable "pod_name" {
 
 variable "container_image" {
   type        = string
-  description = "CUDA-capable image with Python (RunPod PyTorch tags work well)"
-  default     = "runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04"
+  description = "CUDA 12 + Python 3.11 (matches onnxruntime-gpu 1.19+ on PyPI)"
+  default     = "runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04"
 }
 
 variable "cloud_type" {
