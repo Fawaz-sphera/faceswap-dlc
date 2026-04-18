@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars (gitignored) and fill in.
+# Authenticate: export RUNPOD_API_KEY="rpa_..."
+
+swap_service_api_key = "generate-with-openssl-rand-hex-32"
+# Public git URL that contains Deep-Live-Cam/remote-swap-server (your fork once pushed).
+swap_code_git_url = "https://github.com/YOUR_USER/YOUR_REPO.git"
+
+# Optional overrides:
+# cloud_type           = "SECURE"
+# pod_name             = "dlc-remote-swap"
+# gpu_type_ids         = ["NVIDIA RTX A4000"]
+# data_center_ids      = ["US-NJ-1"]
