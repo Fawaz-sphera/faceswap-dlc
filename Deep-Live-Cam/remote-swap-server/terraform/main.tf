@@ -31,15 +31,18 @@ resource "runpod_pod" "dlc_remote_swap" {
   volume_in_gb         = var.pod_volume_in_gb
   volume_mount_path    = "/workspace"
 
-  ports = ["${local.internal_port}/http"]
+  ports = ["${local.internal_port}/http", "22/tcp"]
 
-  env = {
-    SWAP_SERVICE_API_KEY = var.swap_service_api_key
-    INSWAPPER_MODEL_PATH = "/workspace/models/inswapper_128.onnx"
-    SWAP_REPO_URL        = var.swap_code_git_url
-    SWAP_REPO_SUBPATH    = var.swap_code_repo_subpath
-    PORT                 = tostring(local.internal_port)
-  }
+  env = merge(
+    {
+      SWAP_SERVICE_API_KEY = var.swap_service_api_key
+      INSWAPPER_MODEL_PATH = "/workspace/models/inswapper_128.onnx"
+      SWAP_REPO_URL        = var.swap_code_git_url
+      SWAP_REPO_SUBPATH    = var.swap_code_repo_subpath
+      PORT                 = tostring(local.internal_port)
+    },
+    var.ssh_public_key == "" ? {} : { PUBLIC_KEY = var.ssh_public_key }
+  )
 
   docker_start_cmd = [
     "/bin/bash",

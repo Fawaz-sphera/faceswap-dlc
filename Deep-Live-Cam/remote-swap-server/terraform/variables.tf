@@ -85,3 +85,9 @@ variable "swap_code_repo_subpath" {
   description = "Path from repo root to remote-swap-server directory"
   default     = "Deep-Live-Cam/remote-swap-server"
 }
+
+variable "ssh_public_key" {
+  type        = string
+  description = "ssh-ed25519 line for RunPod; injected as PUBLIC_KEY for root SSH on TCP 22"
+  default     = ""
+}
