@@ -7,3 +7,4 @@
 **/env.remote
 **/.venv/
 **/venv/
+.tools/
